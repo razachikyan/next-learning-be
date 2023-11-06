@@ -9,3 +9,9 @@ export interface ISession {
   session_id: string;
   user_id: string;
 }
+
+export interface CustomError extends Error {
+  status: number;
+  additioal: string;
+  type: string;
+}

@@ -1,9 +1,10 @@
 import knex from "knex";
-import { ISession, IUser } from "../types";
+import { CustomError, ISession, IUser } from "../types";
+import StatusCodes from "../statusCodes";
 
 export class User {
   private DB: knex.Knex<any, unknown[]>;
-  
+
   public constructor() {
     this.DB = knex({
       client: "pg",
@@ -20,65 +21,144 @@ export class User {
     user_name: string,
     user_password: string,
     session_id: string
-  ) => {
-    await this.DB.table<IUser>("users").insert({
-      user_name,
-      user_password,
-      session_id,
-    });
-  };
+  ): Promise<void> => {
+    try {
+      await this.DB.table<IUser>("users").insert({
+        user_name,
+        user_password,
+        session_id,
+      });
+    } catch (err: any) {
+      const error: CustomError = new Error() as CustomError;
+      error.message = StatusCodes.get(404) as string;
+      error.status = 404;
+      error.additioal = err.message;
+      error.type = "custom";
 
-  public ubdateSession = async (user_id: string, session_id: string) => {
-    const session = await this.getSessionByUserId(user_id);
-
-    if (session) {
-      await this.DB.table<ISession>("sessions")
-        .where({ user_id })
-        .update({ session_id });
-    } else {
-      await this.DB.table<ISession>("sessions").insert({ user_id, session_id });
+      throw error;
     }
-
-    await this.DB.table<IUser>("users")
-      .where({ user_id })
-      .update({ session_id: session_id });
   };
 
-  public getSessionByUserId = async (user_id: string) => {
-    const session = await this.DB.table<ISession>("sessions")
-      .select()
-      .where({ user_id })
-      .limit(1)
-      .then((res) => res[0]);
+  public ubdateSession = async (
+    user_id: string,
+    session_id: string
+  ): Promise<void> => {
+    try {
+      const session = await this.getSessionByUserId(user_id);
 
-    return session;
+      if (session) {
+        await this.DB.table<ISession>("sessions")
+          .where({ user_id })
+          .update({ session_id });
+      } else {
+        await this.DB.table<ISession>("sessions").insert({
+          user_id,
+          session_id,
+        });
+      }
+
+      await this.DB.table<IUser>("users")
+        .where({ user_id })
+        .update({ session_id: session_id });
+    } catch (err: any) {
+      if ("type" in err && err.type === "custom") {
+        throw err;
+      }
+      const error: CustomError = new Error() as CustomError;
+      error.message = StatusCodes.get(404) as string;
+      error.status = 404;
+      error.additioal = err.message;
+      error.type = "custom";
+
+      throw error;
+    }
   };
 
-  public deleteSession = async (user_id: string) => {
-    await this.DB.table<ISession>("sessions").where({ user_id }).delete();
+  public getSessionByUserId = async (user_id: string): Promise<ISession> => {
+    try {
+      const session = await this.DB.table<ISession>("sessions")
+        .select()
+        .where({ user_id })
+        .limit(1)
+        .then((res) => res[0]);
+
+      return session;
+    } catch (err: any) {
+      const error: CustomError = new Error() as CustomError;
+      error.message = StatusCodes.get(404) as string;
+      error.status = 404;
+      error.additioal = err.message;
+      error.type = "custom";
+
+      throw error;
+    }
   };
 
-  public getUserById = async (user_id: string) => {
-    return await this.DB.table<IUser>("users")
-      .select()
-      .where({ user_id })
-      .limit(1)
-      .then((res) => res[0]);
+  public deleteSession = async (user_id: string): Promise<void> => {
+    try {
+      await this.DB.table<ISession>("sessions").where({ user_id }).delete();
+    } catch (err: any) {
+      const error: CustomError = new Error() as CustomError;
+      error.message = StatusCodes.get(404) as string;
+      error.status = 404;
+      error.additioal = err.message;
+      error.type = "custom";
+
+      throw error;
+    }
   };
 
-  public getUserByUserName = async (user_name: string) => {
-    return await this.DB.table<IUser>("users")
-      .select()
-      .where({ user_name })
-      .limit(1)
-      .then((res) => res[0]);
+  public getUserById = async (user_id: string): Promise<IUser> => {
+    try {
+      return await this.DB.table<IUser>("users")
+        .select()
+        .where({ user_id })
+        .limit(1)
+        .then((res) => res[0]);
+    } catch (err: any) {
+      const error: CustomError = new Error() as CustomError;
+      error.message = StatusCodes.get(404) as string;
+      error.status = 404;
+      error.additioal = err.message;
+      error.type = "custom";
+
+      throw error;
+    }
   };
 
-  public getUserBySessionId = async (session_id: string) => {
-    return await this.DB.table<IUser>("users")
-      .select()
-      .where({ session_id })
-      .limit(1)
-      .then((res) => res[0]);
+  public getUserByUserName = async (user_name: string): Promise<IUser> => {
+    try {
+      return await this.DB.table<IUser>("users")
+        .select()
+        .where({ user_name })
+        .limit(1)
+        .then((res) => res[0]);
+    } catch (err: any) {
+      const error: CustomError = new Error() as CustomError;
+      error.message = StatusCodes.get(404) as string;
+      error.status = 404;
+      error.additioal = err.message;
+      error.type = "custom";
+
+      throw error;
+    }
+  };
+
+  public getUserBySessionId = async (session_id: string): Promise<IUser> => {
+    try {
+      return await this.DB.table<IUser>("users")
+        .select()
+        .where({ session_id })
+        .limit(1)
+        .then((res) => res[0]);
+    } catch (err: any) {
+      const error: CustomError = new Error() as CustomError;
+      error.message = StatusCodes.get(404) as string;
+      error.status = 404;
+      error.additioal = err.message;
+      error.type = "custom";
+
+      throw error;
+    }
   };
 }
