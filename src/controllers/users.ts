@@ -3,9 +3,10 @@ import { User } from "../services/users";
 import StatusCodes from "../statusCodes";
 
 export const SignIn = async (req: Request, res: Response): Promise<any> => {
-  const { user_name, user_password, session_id } = req.body;
+  const { user_name, user_password } = req.body;
   try {
     const userInstance = new User();
+    const session_id = await userInstance.createSession(user_name);
     userInstance.createUser(user_name, user_password, session_id);
     res.status(201).send(StatusCodes.get(201));
   } catch (err: any) {

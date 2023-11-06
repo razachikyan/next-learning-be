@@ -1,6 +1,7 @@
 import knex from "knex";
 import { CustomError, ISession, IUser } from "../types";
 import StatusCodes from "../statusCodes";
+import { nanoid } from "nanoid";
 
 export class User {
   private DB: knex.Knex<any, unknown[]>;
@@ -17,6 +18,18 @@ export class User {
       },
     });
   }
+
+  public createSession = async (user_name: string) => {
+    const session_id = nanoid();
+    const user = await this.getUserByUserName(user_name);
+    await this.DB.table<ISession>("sessions").insert({
+      session_id,
+      user_id: user.user_id,
+    });
+
+    return session_id;
+  };
+
   public createUser = async (
     user_name: string,
     user_password: string,
