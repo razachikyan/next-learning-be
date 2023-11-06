@@ -1,6 +1,8 @@
 import express from "express";
-import "dotenv/config";
 import { knex } from "knex";
+import Routes from "./routes/index";
+
+import "dotenv/config";
 
 const app = express();
 app.use(express.json());
@@ -17,6 +19,8 @@ const DB = knex({
 });
 
 const PORT = process.env.PORT || 4000;
+
+app.use("/", Routes.usersRoute);
 
 app.listen(PORT, () =>
   console.log(`Server started on http://localhost:${PORT}`)
