@@ -3,31 +3,23 @@ import { User } from "../services/users";
 import StatusCodes from "../statusCodes";
 
 export const SignIn = async (req: Request, res: Response): Promise<any> => {
-  const { user_name, user_password } = req.body;
+  const { username, password } = req.body;
   try {
     const userInstance = new User();
-    const session_id = await userInstance.createSession(user_name);
-    userInstance.createUser(user_name, user_password, session_id);
-    res.status(201).send(StatusCodes.get(201));
+    const sessionId = await userInstance.addUser(username, password);
+    res.cookie(`sessionID`, sessionId, { httpOnly: true }).redirect("/");
   } catch (err: any) {
-    if ("status" in err) {
-      res.status(err.status).json(err);
-    }
     res.json(err);
   }
 };
 
 export const Login = async (req: Request, res: Response): Promise<any> => {
-  const { session_id, user_id } = req.body;
+  const { username, password } = req.body;
   try {
     const userInstance = new User();
-    await userInstance.ubdateSession(user_id, session_id);
-
-    res.status(200).send(StatusCodes.get(200));
+    const sessionId = await userInstance.ubdateSession(username, password);
+    res.cookie(`sessionId`, sessionId, { httpOnly: true }).sendStatus(200);
   } catch (err: any) {
-    if ("status" in err) {
-      res.status(err.status).json(err);
-    }
     res.json(err);
   }
 };
