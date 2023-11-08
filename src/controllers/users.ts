@@ -7,10 +7,7 @@ export const SignIn = async (req: Request, res: Response): Promise<any> => {
   try {
     const userInstance = new User();
     const sessionId = await userInstance.addUser(username, password);
-    res
-      .cookie(`sessionID`, sessionId, { httpOnly: true })
-      .sendStatus(200)
-      .json({ sessionId });
+    res.cookie("sessionId", sessionId);
   } catch (err: any) {
     res.json(err);
   }
@@ -22,18 +19,17 @@ export const Login = async (req: Request, res: Response): Promise<any> => {
     const userInstance = new User();
     const sessionId = await userInstance.ubdateSession(username, password);
     res.cookie("sessionId", sessionId);
-
-    res.json({ sessionId });
   } catch (err: any) {
     res.json(err);
   }
 };
 
 export const Logout = async (req: Request, res: Response): Promise<any> => {
-  const { user_id } = req.body;
+  const { username } = req.body;
   try {
     const userInstance = new User();
-    await userInstance.deleteSession(user_id);
+    const user = await userInstance.getUserByUserName(username);
+    await userInstance.deleteSession(user.user_id);
 
     res.status(204).send(StatusCodes.get(204));
   } catch (err: any) {
@@ -84,16 +80,17 @@ export const getUserBySessionId = async (
   req: Request,
   res: Response
 ): Promise<any> => {
-  const { session_id } = req.body;
+  const { sessionId } = req.params;
   try {
     const userInstance = new User();
-    const user = await userInstance.getUserBySessionId(session_id);
-
-    res.status(200).send(user);
-  } catch (err: any) {
-    if ("status" in err) {
-      res.status(err.status).json(err);
+    const user = await userInstance.getUserBySessionId(sessionId);
+    if (!user) {
+      throw new Error("Wrong session id");
     }
+    res.status(200).send({ username: user.user_name });
+  } catch (err: any) {
+    console.log(err.message);
+
     res.json(err);
   }
 };

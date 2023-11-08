@@ -94,35 +94,17 @@ export class User {
   };
 
   public deleteSession = async (user_id: string): Promise<void> => {
-    try {
-      await this.DB.table<ISession>("sessions").where({ user_id }).delete();
-    } catch (err: any) {
-      const error: CustomError = new Error() as CustomError;
-      error.message = StatusCodes.get(404) as string;
-      error.status = 404;
-      error.additioal = err.message;
-      error.type = "custom";
-
-      throw error;
-    }
+    await this.DB.table<ISession>("sessions").where({ user_id }).delete();
   };
 
   public getUserById = async (user_id: string): Promise<IUser> => {
-    try {
-      return await this.DB.table<IUser>("users")
-        .select()
-        .where({ user_id })
-        .limit(1)
-        .then((res) => res[0]);
-    } catch (err: any) {
-      const error: CustomError = new Error() as CustomError;
-      error.message = StatusCodes.get(404) as string;
-      error.status = 404;
-      error.additioal = err.message;
-      error.type = "custom";
-
-      throw error;
-    }
+    const user = await this.DB.table<IUser>("users")
+      .select()
+      .where({ user_id })
+      .limit(1)
+      .then((res) => res[0]);
+    if (!user) throw new User();
+    return user;
   };
 
   public getUserByUserName = async (user_name: string): Promise<IUser> => {
@@ -135,20 +117,14 @@ export class User {
   };
 
   public getUserBySessionId = async (session_id: string): Promise<IUser> => {
-    try {
-      return await this.DB.table<IUser>("users")
-        .select()
-        .where({ session_id })
-        .limit(1)
-        .then((res) => res[0]);
-    } catch (err: any) {
-      const error: CustomError = new Error() as CustomError;
-      error.message = StatusCodes.get(404) as string;
-      error.status = 404;
-      error.additioal = err.message;
-      error.type = "custom";
+    const session = await this.DB.table<ISession>("sessions")
+      .select()
+      .where({ session_id })
+      .limit(1)
+      .then((res) => res[0]);
+    if (!session) throw new Error("Wrong session id");
 
-      throw error;
-    }
+    const user = await this.getUserById(session.user_id);
+    return user;
   };
 }
