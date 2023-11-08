@@ -7,7 +7,10 @@ export const SignIn = async (req: Request, res: Response): Promise<any> => {
   try {
     const userInstance = new User();
     const sessionId = await userInstance.addUser(username, password);
-    res.cookie(`sessionID`, sessionId, { httpOnly: true }).redirect("/");
+    res
+      .cookie(`sessionID`, sessionId, { httpOnly: true })
+      .sendStatus(200)
+      .json({ sessionId });
   } catch (err: any) {
     res.json(err);
   }
@@ -18,7 +21,9 @@ export const Login = async (req: Request, res: Response): Promise<any> => {
   try {
     const userInstance = new User();
     const sessionId = await userInstance.ubdateSession(username, password);
-    res.cookie(`sessionId`, sessionId, { httpOnly: true }).sendStatus(200);
+    res.cookie("sessionId", sessionId);
+
+    res.json({ sessionId });
   } catch (err: any) {
     res.json(err);
   }
